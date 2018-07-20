@@ -4,76 +4,88 @@
                 <script src="static/js/jquery-1.10.2.min.js"></script>
                 <script src="static/js/jquery-1.11.0.js"></script>
                 <script src="static/js/jquery-ui.js"></script>
-                <script>
-                        function hitPython(form){
-                            data = '{"username":"' + form.username.value + '","email":"' + form.email.value +'"}';
-                            $.ajax({
-                                url: 'http://localhost:5000/user',
-                                type: 'POST',
-                                contentType : 'application/json',
-                                data : data,
-                                success: function(res) {
-                                    alert('SUCCESS');
-                                    getAllUsers();
-                                },
-                                error: function(resp){
-                                    console.log(resp);
-                                    alert('Error : '+ resp);
-                                }
-                            });
-                            return false;
-                        }
-
-                        function getAllUsers(){
-                            $.ajax({
-                                url: 'http://localhost:5000/users',
-                                type: 'GET',
-                                contentType : 'application/json',
-                                success: function(res) {
-                                    console.log(res);
-                                    console.log(res.length);
-                                    var text = '';
-                                    for (i = 0; i < res.length; i++) { 
-                                        text += res[i].username + ' -- ' + res[i].email + "<br>";
-                                    }
-                                    $('#JsonData').html(text);
-                                },
-                                error: function(resp){
-                                    console.log(resp);
-                                    alert('Error : '+ resp);
-                                }
-                            });
-                        }
-                        $( document ).ready(function() {
-                            
-                        });
-                </script>
+                <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+                <style>
+                    table, th , td {
+                        border: 1px solid grey;
+                        border-collapse: collapse;
+                        padding: 5px;
+                    }
+                    table tr:nth-child(odd) {
+                        background-color: #f1f1f1;
+                    }
+                    table tr:nth-child(even) {
+                        background-color: #ffffff;
+                    }
+                </style>
         </head>
-        <body onload="getAllUsers()">
-            <p id="JsonData">
-                No Data.
-            </p>
-            <form onsubmit="return hitPython(this)">
+        <body>
+            <div data-ng-app="myApp" data-ng-controller="myCtrl" data-ng-init="loadData()">
+                <json-data-directive></json-data-directive>
                 <table>
-                    <tr>
-                        <td>
-                            <label>Username</label>
-                        </td>
-                        <td>
-                            <input type="text" id="username" name="username">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                                <label>Email</label>
-                        </td>
-                        <td>
-                                <input type="email" id="email" name="email">
-                        </td>
-                            
+                    <tr ng-repeat="x in users | orderBy : 'username'">
+                        <td>{{ x.username | uppercase }}</td>
+                        <td>{{ x.email }}</td>
                     </tr>
                 </table>
-                <button type="submit">Submit</button>
-            </form>
+                      
+                <form data-ng-submit="hitPython()">
+                    <table>
+                        <tr>
+                            <td>
+                                <label>Username</label>
+                            </td>
+                            <td>
+                                <input type="text" id="username" name="username" data-ng-model="username">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                    <label>Email</label>
+                            </td>
+                            <td>
+                                    <input type="email" id="email" name="email" data-ng-model="email">
+                            </td>
+                                
+                        </tr>
+                    </table>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+            <script>
+                    var app = angular.module('myApp', []);             
+                    
+                    app.controller('myCtrl', function($scope,$http) {  
+                        
+                        $scope.loadData = function(){
+                            $http.get('http://localhost:5000/users').then(
+                                function (response) {
+                                    $scope.users = response.data;
+                                }
+                            );
+                        };
+
+                        $scope.hitPython = function() {
+                            $http({
+                                method : "POST",
+                                data : '{"username":"' + $scope.username + '","email":"' + $scope.email +'"}',
+                                url : "http://localhost:5000/user"
+                            }).then(function mySuccess(response) {
+                                alert('SUCCESS');
+                                $scope.loadData();
+                            }, function myError(response) {
+                                alert('ERROR');
+                            });
+                            
+                            return false;
+                        };
+                    });
+
+                     app.directive("jsonDataDirective", function() {
+                        return {
+                            template : '<h1>PYTHON REST API<h1>'
+                        };
+                    });
+                </script>
         </body>
     </html>
