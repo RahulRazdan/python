@@ -1,0 +1,79 @@
+<DOCTYPE!>
+    <html>
+        <head>
+                <script src="static/js/jquery-1.10.2.min.js"></script>
+                <script src="static/js/jquery-1.11.0.js"></script>
+                <script src="static/js/jquery-ui.js"></script>
+                <script>
+                        function hitPython(form){
+                            data = '{"username":"' + form.username.value + '","email":"' + form.email.value +'"}';
+                            $.ajax({
+                                url: 'http://localhost:5000/user',
+                                type: 'POST',
+                                contentType : 'application/json',
+                                data : data,
+                                success: function(res) {
+                                    alert('SUCCESS');
+                                    getAllUsers();
+                                },
+                                error: function(resp){
+                                    console.log(resp);
+                                    alert('Error : '+ resp);
+                                }
+                            });
+                            return false;
+                        }
+
+                        function getAllUsers(){
+                            $.ajax({
+                                url: 'http://localhost:5000/users',
+                                type: 'GET',
+                                contentType : 'application/json',
+                                success: function(res) {
+                                    console.log(res);
+                                    console.log(res.length);
+                                    var text = '';
+                                    for (i = 0; i < res.length; i++) { 
+                                        text += res[i].username + ' -- ' + res[i].email + "<br>";
+                                    }
+                                    $('#JsonData').html(text);
+                                },
+                                error: function(resp){
+                                    console.log(resp);
+                                    alert('Error : '+ resp);
+                                }
+                            });
+                        }
+                        $( document ).ready(function() {
+                            
+                        });
+                </script>
+        </head>
+        <body onload="getAllUsers()">
+            <p id="JsonData">
+                No Data.
+            </p>
+            <form onsubmit="return hitPython(this)">
+                <table>
+                    <tr>
+                        <td>
+                            <label>Username</label>
+                        </td>
+                        <td>
+                            <input type="text" id="username" name="username">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                                <label>Email</label>
+                        </td>
+                        <td>
+                                <input type="email" id="email" name="email">
+                        </td>
+                            
+                    </tr>
+                </table>
+                <button type="submit">Submit</button>
+            </form>
+        </body>
+    </html>
